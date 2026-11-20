@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""OrcaSlicer local export hook for the ported ZYYX+ (Cura) profile."""
+"""OrcaSlicer local export hook for the ZYYX+ profile."""
 
 import argparse
 import os
 from pathlib import Path
 import re
+import shutil
 import stat
 import subprocess
 import tempfile
 
 
-CURA_GPX = Path.home() / ".local/share/cura/5.11/plugins/X3GWriter/X3GWriter/gpx"
 MARKER = ";ZYYX_X3G "
 # Pin the executable parts of the ported profile, except the material temperature.
 # A changed or incomplete start/end block must be reviewed, not silently printed.
@@ -68,6 +68,27 @@ NOZZLE = re.compile(r"M104 S([0-9]+)(?: T0)?")
 BED_HEAT = re.compile(r"M0*(?:109|140|190)(?![0-9.])", re.IGNORECASE)
 FAN = re.compile(r"M106(?: S([0-9]+))?(?: P0)?")
 G92_WARNING = "warning G92 emulation unable to determine all coordinates to set via x3g:140 set extended position"
+
+
+def find_gpx(override):
+    def executable(path):
+        return path.is_file() and os.access(path, os.X_OK)
+
+    if override is not None:
+        if not executable(override):
+            raise ValueError(f"--gpx pekar inte på en körbar fil: {override}")
+        return override.resolve(strict=True)
+
+    for path in (
+        Path(__file__).resolve().with_name("gpx"),
+        Path.home() / ".local/libexec/orca-zyyx-x3g/gpx",
+    ):
+        if executable(path):
+            return path.resolve(strict=True)
+    on_path = shutil.which("gpx")
+    if on_path:
+        return Path(on_path).resolve(strict=True)
+    raise ValueError("Hittar inte GPX. Kör ./install.sh eller ange --gpx /sökväg/till/gpx (med maskinläget z).")
 
 
 def normalize(source, ready):
@@ -150,7 +171,7 @@ def convert(source, gpx, output_name):
         ready, converted = staging / (build_name + ".gcode"), staging / (build_name + ".x3g")
         allowed_g92 = normalize(source, ready)
         result = subprocess.run(
-            [str(gpx.resolve(strict=True)), "-I", "-g", "-p", "-m", "z", str(ready), str(converted)],
+            [str(find_gpx(gpx)), "-I", "-g", "-p", "-m", "z", str(ready), str(converted)],
             stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             env={**os.environ, "LC_ALL": "C"}, text=True, encoding="utf-8", errors="replace",
         )
@@ -184,7 +205,10 @@ def convert(source, gpx, output_name):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--gpx", type=Path, default=CURA_GPX, help="sökväg till GPX-binären")
+    parser.add_argument(
+        "--gpx", type=Path,
+        help="sökväg till GPX-binären (annars bredvid skriptet, i användarens libexec eller på PATH)",
+    )
     parser.add_argument("source", type=Path, help="Orcas temporära .pp-fil, bifogas av Orca")
     args = parser.parse_args()
     try:
