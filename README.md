@@ -1,8 +1,8 @@
 # OrcaSlicer X3G Writer for ZYYX+
 
-Export a local `.x3g` file from OrcaSlicer for a single-extruder ZYYX+. The writer uses **GPX directly** to encode Orca's G-code. **You do not need Cura, CuraEngine, or a Cura plugin** to install or use it.
+Export a local `.x3g` file from OrcaSlicer for a single-extruder ZYYX+. The writer uses GPX to encode Orca's G-code.
 
-**This is an AI-developed community project.** It is independent of OrcaSlicer, Cura, ZYYX and the authors of the tools it uses.
+**This is an independent, AI-developed community project.**
 
 ## Before installing
 
@@ -44,8 +44,8 @@ Slice a small model, select **Export G-code file** and choose a fresh local file
 
 If the writer reports `M190` or `M140`, check the filament assigned to the model: all bed temperatures must be **0 °C** for this unheated printer. Orca 2.5.1 can report *“Filament 1 cannot be printed directly on the surface of this plate”* at 0 °C; this does not prevent local file export. Do not raise the bed temperature to suppress it.
 
-**Verification scope:** Local GUI export and decoding were tested. On a PLA cube, the decoded homing, three-point probing, nozzle wait and priming sequence matched a CuraEngine reference. The standalone GPX build reproduced the previous X3G export byte for byte from the same Orca G-code. Physical printing has not been verified.
+**Verification scope:** A PLA cube was exported through OrcaSlicer's GUI and decoded successfully. The standalone GPX build reproduced the same X3G file byte for byte from the same G-code. Physical printing has not been verified.
 
 ## Credits
 
-The original Cura plugin [**X3GWriter**](https://github.com/Ghostkeeper/X3GWriter), created by **[Ghostkeeper](https://github.com/Ghostkeeper)**, inspired this integration. It is not a dependency. Credit for the actual X3G encoding and the ZYYX machine definition belongs to the **[GPX project and its contributors](https://github.com/markwal/GPX)**.
+Thanks to [Ghostkeeper](https://github.com/Ghostkeeper), author of the original [X3GWriter](https://github.com/Ghostkeeper/X3GWriter).

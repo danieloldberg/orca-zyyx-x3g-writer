@@ -117,7 +117,7 @@ def normalize(source, ready):
     for i, expected in zip(start, START):
         is_temperature = "{temperature}" in expected
         if commands[i] != expected.format(temperature=temp[1]) or marked[i] == is_temperature:
-            raise ValueError(f"Rad {i + 1}: oväntat startblock; välj ZYYX+ 0.4 mm (Cura)")
+            raise ValueError(f"Rad {i + 1}: oväntat startblock; välj en ZYYX+-profil med rätt startsekvens")
     if any(marked[i] for i in body + end) or [commands[i] for i in end] != END:
         raise ValueError("Oväntade ZYYX-markörer eller ändrat slutblock")
     if not any(MOVE.fullmatch(commands[i]) for i in body):
